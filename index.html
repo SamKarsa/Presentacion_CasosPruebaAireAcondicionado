@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema AC — Pruebas de Software</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --white: #ffffff;
+  --off: #faf9f7;
+  --paper: #f4f1ec;
+  --ink: #1a1714;
+  --ink2: #4a4540;
+  --ink3: #8c857d;
+  --blue: #1d4ed8;
+  --blue-light: #eff6ff;
+  --blue-mid: #dbeafe;
+  --orange: #c2410c;
+  --orange-light: #fff7ed;
+  --orange-mid: #fed7aa;
+  --green: #166534;
+  --green-light: #f0fdf4;
+  --green-mid: #bbf7d0;
+  --amber: #92400e;
+  --amber-light: #fffbeb;
+  --border: #e8e3db;
+  --radius: 12px;
+  --W: 860px;
+  --H: 540px;
+}
+
+body {
+  background: var(--paper);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px 24px;
+}
+
+/* ─── DECK ─── */
+.deck { width: var(--W); }
+
+.slide {
+  display: none;
+  width: var(--W);
+  min-height: var(--H);
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  overflow: hidden;
+  animation: up .3s ease;
+  flex-direction: column;
+}
+.slide.active { display: flex; }
+@keyframes up { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+/* ─── SLIDE NUMBER TAG ─── */
+.s-num {
+  position: absolute;
+  top: 22px; right: 28px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--ink3);
+}
+
+/* ─── COVER ─── */
+.cover {
+  position: relative;
+  background: var(--ink);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+  min-height: var(--H);
+}
+.cover-bg {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    90deg, rgba(255,255,255,.015) 0 1px, transparent 1px 60px
+  ),
+  repeating-linear-gradient(
+    0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 60px
+  );
+}
+.cover-inner { position: relative; z-index: 1; padding: 60px 80px; }
+.cover-label {
+  display: inline-block;
+  background: var(--orange);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 40px;
+  margin-bottom: 28px;
+}
+.cover-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 48px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 14px;
+}
+.cover-title em { color: #fbbf24; font-style: italic; }
+.cover-sub {
+  font-size: 15px;
+  color: rgba(255,255,255,.55);
+  font-weight: 300;
+  margin-bottom: 36px;
+}
+.cover-chips { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.chip {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.7);
+  font-size: 12px;
+  padding: 7px 16px;
+  border-radius: 40px;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ─── SLIDE LAYOUT ─── */
+.s-head {
+  padding: 32px 40px 22px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.s-section {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 8px;
+}
+.s-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.s-title em { font-style: italic; color: var(--blue); }
+.s-body {
+  padding: 24px 40px 32px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ─── GRIDS ─── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+.g5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; }
+.split { display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; align-items: start; }
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--off);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.card-ico { font-size: 24px; margin-bottom: 8px; }
+.card-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 6px;
+  font-family: 'DM Mono', monospace;
+}
+.card p { font-size: 12.5px; color: var(--ink2); line-height: 1.55; }
+
+/* ─── LIST ─── */
+.blist { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.blist li { display: flex; gap: 10px; font-size: 13px; color: var(--ink2); line-height: 1.5; align-items: flex-start; }
+.blist li .dot2 { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); flex-shrink: 0; margin-top: 5px; }
+.blist li strong { color: var(--ink); font-weight: 600; }
+
+/* ─── CALLOUT ─── */
+.callout {
+  background: var(--blue-light);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.5;
+}
+.callout strong { color: var(--blue); }
+.callout-orange {
+  background: var(--orange-light);
+  border-left-color: var(--orange);
+}
+.callout-orange strong { color: var(--orange); }
+
+/* ─── TYPE PILLS ─── */
+.type-card {
+  background: var(--off);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.type-card .t-ico { font-size: 22px; margin-bottom: 6px; }
+.type-card .t-name { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.type-card .t-desc { font-size: 10.5px; color: var(--ink3); line-height: 1.4; }
+.type-card.highlighted { background: var(--orange-light); border-color: var(--orange-mid); }
+.type-card.highlighted .t-name { color: var(--orange); }
+
+/* ─── CU BOX ─── */
+.cu {
+  background: var(--off);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.cu-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--border);
+}
+.cu-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  background: var(--blue);
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.cu-title-text { font-size: 13px; font-weight: 600; color: var(--ink); }
+.cu-actor { margin-left: auto; font-size: 11px; color: var(--ink3); }
+.cu-grid { display: grid; grid-template-columns: 1fr 1.8fr 1fr; gap: 0; }
+.cu-col { padding: 12px 16px; border-right: 1px solid var(--border); }
+.cu-col:last-child { border-right: none; }
+.cu-col-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink3); margin-bottom: 8px; }
+.cu-col ul { list-style: none; }
+.cu-col ul li { font-size: 11.5px; color: var(--ink2); padding: 2px 0; line-height: 1.4; }
+.cu-col ul li::before { content: '› '; color: var(--orange); font-weight: 700; }
+
+/* ─── TABLE ─── */
+.tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tbl thead tr { background: var(--paper); }
+.tbl th {
+  text-align: left;
+  padding: 9px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  font-family: 'DM Mono', monospace;
+  border-bottom: 2px solid var(--border);
+}
+.tbl td {
+  padding: 9px 12px;
+  color: var(--ink2);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  line-height: 1.4;
+}
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: var(--off); }
+.tbl td:first-child { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--ink); }
+
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  font-family: 'DM Mono', monospace;
+}
+.b-ok { background: var(--green-light); color: var(--green); border: 1px solid var(--green-mid); }
+.b-warn { background: var(--amber-light); color: var(--amber); border: 1px solid var(--orange-mid); }
+.b-blue { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-mid); }
+.b-purple { background: #f5f3ff; color: #5b21b6; border: 1px solid #ddd6fe; }
+
+/* ─── EXCEPTION ROWS ─── */
+.exc-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.exc-head-row { display: grid; grid-template-columns: 1.1fr 1fr 1.2fr 1.2fr; background: var(--paper); border-bottom: 2px solid var(--border); }
+.exc-row-r { display: grid; grid-template-columns: 1.1fr 1fr 1.2fr 1.2fr; border-bottom: 1px solid var(--border); }
+.exc-row-r:last-child { border-bottom: none; }
+.exc-cell { padding: 11px 14px; font-size: 12px; color: var(--ink2); line-height: 1.4; border-right: 1px solid var(--border); }
+.exc-cell:last-child { border-right: none; }
+.exc-h { font-family: 'DM Mono', monospace; font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink3); font-weight: 600; }
+.exc-cell strong { font-weight: 600; color: var(--ink); }
+
+/* ─── STATS ─── */
+.stats { display: flex; gap: 12px; }
+.stat-box {
+  flex: 1;
+  background: var(--off);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+.stat-n { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; color: var(--blue); line-height: 1; }
+.stat-l { font-size: 11px; color: var(--ink3); margin-top: 4px; }
+
+/* ─── QUOTE ─── */
+.quote {
+  background: var(--ink);
+  border-radius: 10px;
+  padding: 22px 28px;
+  text-align: center;
+}
+.q-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-style: italic;
+  color: #fff;
+  line-height: 1.4;
+}
+.q-text em { color: #fbbf24; font-style: normal; }
+
+/* ─── FLOW ─── */
+.flow { display: flex; align-items: stretch; gap: 6px; }
+.flow-step {
+  flex: 1;
+  background: var(--off);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 12px;
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.4;
+  text-align: center;
+}
+.flow-step .fn { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--orange); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; font-weight: 600; }
+.flow-step strong { color: var(--ink); display: block; font-size: 12.5px; margin-bottom: 3px; }
+.f-arrow { color: var(--ink3); font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+
+/* ─── DIVIDER ─── */
+.divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ─── TIMELINE ─── */
+.timeline { display: flex; flex-direction: column; gap: 2px; }
+.tl { display: flex; gap: 12px; padding: 8px 14px; border-radius: 8px; }
+.tl:hover { background: var(--off); }
+.tl-t { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--orange); min-width: 90px; padding-top: 2px; font-weight: 500; }
+.tl-line { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 4px; }
+.tl-dot3 { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); flex-shrink: 0; }
+.tl-seg { width: 1px; flex: 1; background: var(--border); min-height: 20px; }
+.tl-c { font-size: 12.5px; color: var(--ink2); line-height: 1.4; }
+.tl-c strong { color: var(--ink); font-weight: 600; display: block; font-size: 13px; }
+
+/* ─── NAV ─── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: var(--W);
+  margin-top: 16px;
+}
+.nav-btn {
+  background: var(--white);
+  border: 1px solid var(--border);
+  color: var(--ink2);
+  padding: 9px 22px;
+  border-radius: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all .18s;
+  font-weight: 500;
+}
+.nav-btn:hover:not(:disabled) {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.nav-btn:disabled { opacity: .3; cursor: default; }
+
+.nav-mid { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.dots { display: flex; gap: 5px; }
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: all .2s;
+}
+.dot.active { background: var(--orange); width: 18px; border-radius: 3px; }
+.s-counter { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--ink3); }
+
+.tbl td:first-child {
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+<!-- 1. PORTADA -->
+<div class="slide cover active" id="s0">
+  <div class="cover-bg"></div>
+  <div class="cover-inner">
+    <span class="cover-label">Pruebas de Software</span>
+    <h1 class="cover-title">Sistema de<br><em>Aire Acondicionado</em></h1>
+    <p class="cover-sub">Casos de Uso y Verificación · Ingeniería de Software</p>
+    <div class="cover-chips">
+      <span class="chip">5 Casos de uso</span>
+      <span class="chip">8 Pruebas</span>
+      <span class="chip">5 Metodologías</span>
+    </div>
+  </div>
+</div>
+
+<!-- 2. ¿QUÉ ES UN AC? -->
+<div class="slide" id="s1">
+  <div class="s-head">
+    <div class="s-section">01 · Introducción</div>
+    <h2 class="s-title">¿Qué controla un sistema de <em>Aire Acondicionado</em>?</h2>
+    <span class="s-num">2 / 10</span>
+  </div>
+  <div class="s-body">
+    <div class="g4">
+      <div class="card"><div class="card-ico">🌡️</div><div class="card-label">Temperatura</div><p>Mantiene el ambiente en el rango deseado por el usuario.</p></div>
+      <div class="card"><div class="card-ico">💧</div><div class="card-label">Humedad</div><p>Evita exceso de vapor que daña materiales y propicia moho.</p></div>
+      <div class="card"><div class="card-ico">🌬️</div><div class="card-label">Calidad del Aire</div><p>Filtros que retienen polvo, bacterias y alérgenos.</p></div>
+      <div class="card"><div class="card-ico">🔄</div><div class="card-label">Circulación</div><p>Distribución uniforme del aire tratado en el recinto.</p></div>
+    </div>
+    <div class="split">
+      <div class="callout">
+        <strong>¿Por qué probarlo con rigor?</strong> Un fallo en cualquiera de estas variables afecta directamente la salud, la productividad y la infraestructura.
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div class="card" style="flex:1"><div class="card-ico">🏥</div><div class="card-label">Hospitales</div><p>Temperatura/humedad incorrectas comprometen equipos médicos.</p></div>
+        <div class="card" style="flex:1"><div class="card-ico">🖥️</div><div class="card-label">Data Centers</div><p>Sobrecalentamiento puede destruir servidores en minutos.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. COMPONENTES -->
+<div class="slide" id="s2">
+  <div class="s-head">
+    <div class="s-section">02 · Componentes</div>
+    <h2 class="s-title">El ciclo de refrigeración y el <em>Termostato</em></h2>
+    <span class="s-num">3 / 10</span>
+  </div>
+  <div class="s-body">
+    <div class="flow">
+      <div class="flow-step"><div class="fn">Compresor</div><strong>Corazón del sistema</strong>Presuriza el gas refrigerante. Su activación es el evento de prueba más importante.</div>
+      <div class="f-arrow">→</div>
+      <div class="flow-step"><div class="fn">Condensador</div><strong>Unidad exterior</strong>Libera calor al ambiente. Determina la eficiencia total del sistema.</div>
+      <div class="f-arrow">→</div>
+      <div class="flow-step"><div class="fn">Evaporador</div><strong>Unidad interior</strong>Absorbe el calor del recinto y condensa la humedad del aire.</div>
+      <div class="f-arrow">→</div>
+      <div class="flow-step"><div class="fn">Termostato</div><strong>Cerebro del software</strong>Lee sensores, compara con Set Point y toma decisiones de control.</div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="card-label" style="margin-bottom:10px">El termostato gestiona</div>
+        <ul class="blist">
+          <li><span class="dot2"></span>Lee continuamente sensores de temperatura y humedad</li>
+          <li><span class="dot2"></span>Compara valores con el <strong>Set Point</strong> del usuario</li>
+          <li><span class="dot2"></span>Activa / desactiva el compresor según corresponda</li>
+          <li><span class="dot2"></span>Ajusta velocidad del ventilador proporcionalmente</li>
+          <li><span class="dot2"></span>Gestiona modos especiales: <strong>Dry, Sleep, Fan, Heat</strong></li>
+        </ul>
+      </div>
+      <div class="callout">
+        <strong>Clave para las pruebas:</strong> Entender el flujo de decisiones del termostato es fundamental para diseñar buenos casos de prueba. Es el componente de software más crítico del sistema.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. TIPOS DE PRUEBA -->
+<div class="slide" id="s3">
+  <div class="s-head">
+    <div class="s-section">03 · Metodología</div>
+    <h2 class="s-title">Cinco tipos de <em>pruebas</em> aplicadas al sistema</h2>
+    <span class="s-num">4 / 10</span>
+  </div>
+  <div class="s-body">
+    <div class="g5">
+      <div class="type-card">
+        <div class="t-ico">⬛</div>
+        <div class="t-name">Caja Negra</div>
+        <div class="t-desc">Valida el comportamiento externo sin ver el código. Ej: configurar 23°C y confirmar respuesta.</div>
+      </div>
+      <div class="type-card">
+        <div class="t-ico">⬜</div>
+        <div class="t-name">Caja Blanca</div>
+        <div class="t-desc">Analiza la lógica interna del firmware. Ej: algoritmo PID del termostato.</div>
+      </div>
+      <div class="type-card highlighted">
+        <div class="t-ico">⚠️</div>
+        <div class="t-name">Borde / Límite</div>
+        <div class="t-desc">Valores extremos: SP mínimo 16°C, máximo 30°C, humedad 0–100%.</div>
+      </div>
+      <div class="type-card highlighted">
+        <div class="t-ico">💥</div>
+        <div class="t-name">Excepción</div>
+        <div class="t-desc">Fallas inesperadas: sensor dañado, fuga de gas, filtro obstruido.</div>
+      </div>
+      <div class="type-card">
+        <div class="t-ico">🔗</div>
+        <div class="t-name">Integración</div>
+        <div class="t-desc">Subsistemas colaborando. Ej: termostato activa compresor y ventilador en sincronía.</div>
+      </div>
+    </div>
+    <div class="callout callout-orange">
+      <strong>Punto clave:</strong> Las pruebas de <strong>borde y excepción</strong> son las más críticas — ahí es donde más frecuentemente fallan los sistemas embebidos en producción.
+    </div>
+  </div>
+</div>
+
+<!-- 5. CU-01 + CU-02 -->
+<div class="slide" id="s4">
+  <div class="s-head">
+    <div class="s-section">04 · Casos de Uso</div>
+    <h2 class="s-title">CU-01 Regulación Térmica · <em>CU-02 Control de Humedad</em></h2>
+    <span class="s-num">5 / 10</span>
+  </div>
+  <div class="s-body">
+    <div class="cu">
+      <div class="cu-top"><span class="cu-badge">CU-01</span><span class="cu-title-text">Regulación Térmica — Modo Automático</span><span class="cu-actor">Actor: Usuario Final</span></div>
+      <div class="cu-grid">
+        <div class="cu-col"><div class="cu-col-label">Precondiciones</div><ul><li>Equipo energizado y conectado</li><li>Sensores de temperatura operativos</li><li>Voltaje 220V estable</li></ul></div>
+        <div class="cu-col"><div class="cu-col-label">Flujo Principal</div><ul><li>Usuario ingresa Set Point (ej. 23°C)</li><li>Termostato mide temperatura actual</li><li>Si T actual &gt; SP → activa compresor</li><li>Ajusta ventilador proporcionalmente</li><li>Al alcanzar objetivo → modo ahorro</li></ul></div>
+        <div class="cu-col"><div class="cu-col-label">Postcondición</div><ul><li>Estabilización ±1°C del Set Point definido</li></ul></div>
+      </div>
+    </div>
+    <div class="cu">
+      <div class="cu-top"><span class="cu-badge">CU-02</span><span class="cu-title-text">Control de Humedad — Modo Dry</span><span class="cu-actor">Actor: Usuario / Sensor</span></div>
+      <div class="cu-grid">
+        <div class="cu-col"><div class="cu-col-label">Precondiciones</div><ul><li>Humedad ambiente &gt; 60%</li><li>Bandeja de drenaje operativa</li><li>Modo Dry disponible en firmware</li></ul></div>
+        <div class="cu-col"><div class="cu-col-label">Flujo Principal</div><ul><li>Usuario activa "Modo Dry"</li><li>Sistema reduce velocidad al mínimo</li><li>Serpentín se enfría para condensar vapor</li><li>Agua se canaliza al desagüe exterior</li></ul></div>
+        <div class="cu-col"><div class="cu-col-label">Postcondición</div><ul><li>Humedad relativa &lt; 60%</li><li>Prevención de moho y hongos</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. CU-03 + CU-04 -->
+<div class="slide" id="s5">
+  <div class="s-head">
+    <div class="s-section">04 · Casos de Uso</div>
+    <h2 class="s-title">CU-03 Sleep / Timer · <em>CU-04 Modo Fan</em></h2>
+    <span class="s-num">6 / 10</span>
+  </div>
+  <div class="s-body">
+    <div class="cu">
+      <div class="cu-top"><span class="cu-badge">CU-03</span><span class="cu-title-text">Optimización Energética — Modo Sleep / Timer</span><span class="cu-actor">Actor: Usuario</span></div>
+      <div class="cu-grid">
+        <div class="cu-col"><div class="cu-col-label">Precondiciones</div><ul><li>Reloj interno sincronizado</li><li>Timer disponible en firmware</li><li>Equipo en funcionamiento normal</li></ul></div>
+        <div class="cu-col"><div class="cu-col-label">Flujo Principal</div><ul><li>Usuario programa apagado en 6 horas</li><li>Sistema inicia cuenta regresiva</li><li>Cada hora sube +1°C el Set Point</li><li>Al cumplir el tiempo → apagado total</li></ul></div>
+        <div class="cu-col"><div class="cu-col-label">Postcondición</div><ul><li>Ahorro energético nocturno efectivo</li><li>Confort sin intervención manual</li></ul></div>
+      </div>
+    </div>
+    <div class="cu">
+      <div class="cu-top"><span class="cu-badge">CU-04</span><span class="cu-title-text">Circulación de Aire — Modo Fan (Solo Ventilación)</span><span class="cu-actor">Actor: Usuario</span></div>
+      <div class="cu-grid">
+        <div class="cu-col"><div class="cu-col-label">Precondiciones</div><ul><li>Sistema energizado correctamente</li><li>Modo Fan disponible en el equipo</li><li>Usuario no requiere enfriamiento</li></ul></div>
+        <div class="cu-col"><div class="cu-col-label">Flujo Principal</div><ul><li>Usuario selecciona "Modo Fan"</li><li>Compresor permanece apagado (0% carga)</li><li>Solo ventilador opera a vel. elegida</li></ul></div>
+        <div class="cu-col"><div class="cu-col-label">Postcondición</div><ul><li>Circulación sin cambio de temperatura</li><li>~60% menos consumo vs Modo Cool</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. CU-05 -->
+<div class="slide" id="s6">
+  <div class="s-head">
+    <div class="s-section">04 · Casos de Uso</div>
+    <h2 class="s-title">CU-05 <em>Calefacción</em> — Modo Heat (Bomba de Calor)</h2>
+    <span class="s-num">7 / 10</span>
+  </div>
+  <div class="s-body">
+    <div class="cu" style="margin-bottom:4px">
+      <div class="cu-top"><span class="cu-badge">CU-05</span><span class="cu-title-text">Calefacción Ambiental — Modo Heat</span><span class="cu-actor">Actor: Usuario</span></div>
+      <div class="cu-grid">
+        <div class="cu-col"><div class="cu-col-label">Precondiciones</div><ul><li>Equipo reversible (bomba de calor)</li><li>Temp. ambiente &lt; Set Point</li><li>Modo Heat habilitado en firmware</li></ul></div>
+        <div class="cu-col"><div class="cu-col-label">Flujo Principal</div><ul><li>Usuario selecciona "Modo Heat"</li><li>Sistema invierte ciclo de refrigeración</li><li>Válvula de 4 vías cambia el circuito</li><li>Evaporador y condensador intercambian roles</li><li>Aire caliente se distribuye en el recinto</li></ul></div>
+        <div class="cu-col"><div class="cu-col-label">Postcondición</div><ul><li>Temperatura sube al valor programado</li><li>Margen estable de ±1°C (igual al modo Cool)</li></ul></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat-box"><div class="stat-n">5</div><div class="stat-l">Casos de uso cubiertos</div></div>
+      <div class="stat-box"><div class="stat-n">4</div><div class="stat-l">Modos de operación</div></div>
+      <div class="stat-box"><div class="stat-n">±1°C</div><div class="stat-l">Margen de tolerancia</div></div>
+      <div class="stat-box"><div class="stat-n">5</div><div class="stat-l">Tipos de prueba aplicados</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 8. TABLA DE PRUEBAS -->
+<div class="slide" id="s7">
+  <div class="s-head">
+    <div class="s-section">05 · Verificación</div>
+    <h2 class="s-title">Tabla de <em>Casos de Prueba</em></h2>
+    <span class="s-num">8 / 10</span>
+  </div>
+  <div class="s-body" style="padding-top:18px">
+    <table class="tbl">
+      <thead>
+        <tr><th>ID</th><th>Acción de Prueba</th><th>Resultado Esperado</th><th>Tipo</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PT-01</td><td>Set Point=23°C, Temperatura=28°C</td><td>Compresor activa en menos de 5 segundos</td><td><span class="badge b-blue">Caja Negra</span></td><td><span class="badge b-ok">✓ Válido</span></td></tr>
+        <tr><td>PT-02</td><td>Set Point=23°C, Temperatura=23°C</td><td>Compresor NO activa (modo ahorro)</td><td><span class="badge b-blue">Caja Negra</span></td><td><span class="badge b-ok">✓ Válido</span></td></tr>
+        <tr><td>PT-03</td><td>Activar Modo Dry con humedad=65%</td><td>Ventilador reduce velocidad al mínimo</td><td><span class="badge b-blue">Caja Negra</span></td><td><span class="badge b-ok">✓ Válido</span></td></tr>
+        <tr><td>PT-04</td><td>Timer programado = 0 horas (límite)</td><td>Sistema rechaza valor y muestra error</td><td><span class="badge b-warn">Borde</span></td><td><span class="badge b-warn">⚠ Borde</span></td></tr>
+        <tr><td>PT-05</td><td>Sensor de temperatura desconectado</td><td>Alerta en pantalla, sistema se pausa</td><td><span class="badge b-purple">Excepción</span></td><td><span class="badge b-warn">⚠ Excep.</span></td></tr>
+        <tr><td>PT-06</td><td>Set Point = 16°C (mínimo permitido)</td><td>Sistema acepta y opera normalmente</td><td><span class="badge b-warn">Borde</span></td><td><span class="badge b-ok">✓ Válido</span></td></tr>
+        <tr><td>PT-07</td><td>Set Point = 10°C (fuera de rango)</td><td>Rechaza, mantiene último valor válido</td><td><span class="badge b-warn">Borde</span></td><td><span class="badge b-warn">⚠ Borde</span></td></tr>
+        <tr><td>PT-08</td><td>Activar Modo Fan con compresor encendido</td><td>Compresor se apaga, ventilador continúa</td><td><span class="badge b-purple">Integración</span></td><td><span class="badge b-ok">✓ Válido</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 9. EXCEPCIONES -->
+<div class="slide" id="s8">
+  <div class="s-head">
+    <div class="s-section">06 · Excepciones y Mantenimiento</div>
+    <h2 class="s-title">Fallas fuera del <em>flujo normal</em></h2>
+    <span class="s-num">9 / 10</span>
+  </div>
+  <div class="s-body">
+    <div class="exc-wrap">
+      <div class="exc-head-row">
+        <div class="exc-cell exc-h">Falla</div>
+        <div class="exc-cell exc-h">Impacto</div>
+        <div class="exc-cell exc-h">Prueba a realizar</div>
+        <div class="exc-cell exc-h">Respuesta esperada</div>
+      </div>
+      <div class="exc-row-r">
+        <div class="exc-cell"><strong>🔧 Filtros obstruidos</strong></div>
+        <div class="exc-cell">–15% eficiencia. Recalentamiento del evaporador.</div>
+        <div class="exc-cell">Medir flujo de aire antes y después de obstruir el filtro.</div>
+        <div class="exc-cell">Alerta de mantenimiento en pantalla.</div>
+      </div>
+      <div class="exc-row-r">
+        <div class="exc-cell"><strong>⚡ Fuga de gas refrigerante</strong></div>
+        <div class="exc-cell">No alcanza temperatura objetivo. Falla crítica.</div>
+        <div class="exc-cell">Verificar presión del circuito con manómetro simulado.</div>
+        <div class="exc-cell">Apagado de emergencia y código de error visible.</div>
+      </div>
+      <div class="exc-row-r">
+        <div class="exc-cell"><strong>💧 Obstrucción del drenaje</strong></div>
+        <div class="exc-cell">Bandeja desborda generando daño por agua.</div>
+        <div class="exc-cell">Bloquear drenaje y verificar activación del flotador.</div>
+        <div class="exc-cell">Parada de emergencia activada por flotador de seguridad.</div>
+      </div>
+    </div>
+    <div class="callout callout-orange">
+      <strong>Mantenimiento preventivo:</strong> Limpieza de filtros mensual + revisión técnica anual. Reduce las fallas técnicas aproximadamente un <strong>70%</strong>.
+    </div>
+  </div>
+</div>
+
+<!-- 10. CONCLUSIÓN -->
+<div class="slide" id="s9">
+  <div class="s-head">
+    <div class="s-section">07 · Conclusión</div>
+    <h2 class="s-title">Aprendizajes <em>principales</em></h2>
+    <span class="s-num">10 / 10</span>
+  </div>
+  <div class="s-body">
+    <div class="split">
+      <ul class="blist">
+        <li><span class="dot2"></span>Un sistema HVAC es un ejemplo ideal para estudiar pruebas de software — combina múltiples subsistemas, sensores y modos.</li>
+        <li><span class="dot2"></span>Las pruebas de caja negra validan la experiencia del usuario; las de caja blanca garantizan que el firmware funciona correctamente.</li>
+        <li><span class="dot2"></span>Las pruebas de borde y excepción son las más importantes — ahí es donde más fallan los sistemas embebidos.</li>
+        <li><span class="dot2"></span>Los 5 casos de uso cubren el núcleo: climatización, deshumidificación, timer, ventilación y calefacción.</li>
+        <li><span class="dot2"></span>La tecnología Inverter ahorra hasta un 40% de energía y demanda algoritmos más complejos — y más casos de prueba.</li>
+      </ul>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="quote">
+          <div class="q-text">"Probar es proteger —<br><em>al sistema y al usuario.</em>"</div>
+        </div>
+        <div class="stats" style="flex-direction:column;gap:8px">
+          <div class="stat-box" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;text-align:left">
+            <span style="font-size:12px;color:var(--ink2)">Casos de prueba definidos</span>
+            <span class="stat-n" style="font-size:24px">8</span>
+          </div>
+          <div class="stat-box" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;text-align:left">
+            <span style="font-size:12px;color:var(--ink2)">Reducción de fallas con mantenimiento</span>
+            <span class="stat-n" style="font-size:24px">70%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end deck -->
+
+<nav class="nav">
+  <button class="nav-btn" id="prev">← Anterior</button>
+  <div class="nav-mid">
+    <div class="dots" id="dots"></div>
+    <span class="s-counter" id="ctr">1 de 10</span>
+  </div>
+  <button class="nav-btn" id="next">Siguiente →</button>
+</nav>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const dotsEl = document.getElementById('dots');
+const ctr = document.getElementById('ctr');
+let cur = 0;
+
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => go(i);
+  dotsEl.appendChild(d);
+});
+
+function go(n) {
+  slides[cur].classList.remove('active');
+  dotsEl.children[cur].classList.remove('active');
+  cur = Math.max(0, Math.min(n, slides.length - 1));
+  slides[cur].classList.add('active');
+  dotsEl.children[cur].classList.add('active');
+  ctr.textContent = `${cur + 1} de ${slides.length}`;
+  document.getElementById('prev').disabled = cur === 0;
+  document.getElementById('next').disabled = cur === slides.length - 1;
+}
+
+document.getElementById('prev').onclick = () => go(cur - 1);
+document.getElementById('next').onclick = () => go(cur + 1);
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(cur + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(cur - 1);
+});
+go(0);
+</script>
+</body>
+</html>
